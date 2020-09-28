@@ -43,22 +43,20 @@ public class Main {
 		
 		// 2. Receive and format input from the keyboard
 		words = parse(kb); 
-		
 		if (words.isEmpty()) {
 			return; // given command was "/quit"
 		}
 		
 		// 3. DFS Word Ladder
 		ArrayList<String> ladder1 = new ArrayList<String>();
-		ladder1 = getWordLadderDFS(words.get(0), words.get(1)); 
-		
-		for (String item: ladder1){
-			System.out.println(item);
-		}
-		
-		
+//		ladder1 = getWordLadderDFS(words.get(0), words.get(1)); 
+				
 		// 4. BFS Word Ladder
+		ArrayList<String> ladder2 = new ArrayList<String>(); 
+		ladder2 = getWordLadderBFS(words.get(0), words.get(1)); 		
+		
 		// 5. Print the best word ladder
+//		printLadder(ladder2); 
 		
 	}
 	
@@ -80,14 +78,12 @@ public class Main {
 	public static ArrayList<String> parse(Scanner keyboard) {
 		
 		ArrayList<String> Words = new ArrayList<String>();		
-		System.out.println("Enter Commands: "); 
 		String read = keyboard.nextLine();
 		
 		// Parse the input commands
 		String[] pieces = read.split(" +"); 
 		
-		if (pieces[0].equals("/quit")) {
-			System.out.println("Quitting"); 
+		if (pieces[0].equals("/quit")) { 
 			return  Words; 
 		}
 		else {
@@ -98,51 +94,117 @@ public class Main {
 	}
 	
 	public static ArrayList<String> getWordLadderDFS(String start, String end) {
-		// Returned list should be ordered start to end.  Include start and end.
-		// If ladder is empty, return list with just start and end.
 		ArrayList<String> wordLadder = new ArrayList<String>(); // Where we will store the word ladder
 		ArrayList<String> searched = new ArrayList<String>(); // Already visited
 		ArrayList<String> ladder = new ArrayList<String>(); // Word ladder to find our string
 		
-		findAdjacentNodes(start);
-		wordLadder = searchDFS(start, end, ladder, searched); 
+//		findAdjacentNodes(start);
+		wordLadder = searchDFS(end, start, ladder, searched); 
 		
-//		System.out.println("WORD LADDER +++++++++++++++++++++++++++++++++++++++++++++++++++"); 
-//		for (String words : wordLadder) {
-//			System.out.println("Word Ladder: "+words);
-//		}
+		// Case where we could not find a word ladder
+		if (wordLadder.isEmpty()) {
+			wordLadder.add(start); 
+			wordLadder.add(end);
+		}
+		
 		return wordLadder;
 	}
-	
-	
-	
-	
+			
     public static ArrayList<String> getWordLadderBFS(String start, String end) {
+    	ArrayList<String> wordLadder = new ArrayList<String>(); // Ladder to eval and return
+    	ArrayList<String> searchNext = new ArrayList<String>(); // Queue of nodes to search
+    	ArrayList<String> ladder = new ArrayList<String>(); // Argument, to be appended to 
+    	ArrayList<String> discovered = new ArrayList<String>(); 
+    	
+    	searchBFS(start, end, ladder, discovered, searchNext);  
+    	wordLadder = discovered; 
 		
-		// TODO some code
-		
-		return null; // replace this line later with real return
+		return wordLadder; // replace this line later with real return
 	}
     
 	
 	public static void printLadder(ArrayList<String> ladder) {
+		// If word ladder only contains start and end words, could not find
+		if (ladder.size() == 2) {
+			System.out.println("no word ladder can be found between " + ladder.get(0) + " and " + ladder.get(1) + ".");
+		}
+		else {
+			System.out.print("a " + ladder.size() + "-rung word ladder exists between " );
+			System.out.println(ladder.get(0) + " and " + ladder.get(ladder.size()-1) + ".");
+			
+			for (String item: ladder){
+				System.out.println(item);
+			}
+		}
 		
 	}
 
 	// PRIVATE HELPER METHODS ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+	
+	private static void searchBFS(String current, String end, ArrayList<String> ladder, ArrayList<String> discovered, ArrayList<String> nodeQueue){
+		ArrayList<String> toAdd;
+		nodeQueue.add(current); 
+		discovered.add(current); 
+		
+		while(! nodeQueue.isEmpty()) {
+			String check =  nodeQueue.remove(0); 
+			System.out.println(check); 
+			toAdd = findAdjacentNodes(check); 
+			
+			for (String item : toAdd) {
+				if (!end.equals(item.toLowerCase()) &&  !discovered.contains(item)) {
+					nodeQueue.add(item); 
+					discovered.add(item); 
+				}
+			}
+		}
+		
+//		ArrayList<String> toAdd; 
+//		String test; // String which we will be comparing to end and evaluating partners of
+//		
+//		discovered.add(current); // We have visited our current node 
+//		
+//		// Base Case: we have found our end node
+//		if(current.toLowerCase().equals(end)) {
+//			ladder.add(current); // Add the target to the word ladder
+//		}
+//		
+//		// If word is not found, add all UNVISITED nodes at the same level
+//		toAdd = findAdjacentNodes(current); 
+//		for (String item : toAdd) {
+//			if (! discovered.contains(item)) {
+//				nodeQueue.add(item); 
+//			}
+//		}
+//
+//		// Add all next nodes to the queue
+//		while (! nodeQueue.isEmpty()) {
+//			test = nodeQueue.remove(0); // Pop a String off of the Queue
+//			discovered.add(test); 
+//		}
+//		
+//		// Add current node if we have found the end node through this branch
+//		if (! ladder.isEmpty()) {
+//			ladder.add(current); 
+//		}
+	}
+	
+	
+	
 	
 	private static ArrayList<String> searchDFS(String current, String end, ArrayList<String> ladder, ArrayList<String> Searched){
 		ArrayList<String> check; 
 		
 		// End Condition: we have found our word
 		if(current.toLowerCase().equals(end)) { 
-			ladder.add(current); 
+			ladder.add(current.toLowerCase()); 
 			return ladder; 
 		}
 		
 		// If not found, find all adjacent words to current and test
-		ArrayList<String> adjacent = findAdjacentNodes(current); // All words one letter off of current
 		Searched.add(current); 
+		ArrayList<String> adjacent = findAdjacentNodes(current); // All words one letter off of current
+		
 		
 		// For each word one letter off, search it's adjacent words
 		for (String next : adjacent) {
@@ -151,17 +213,16 @@ public class Main {
 				if (!check.isEmpty()) {
 					
 					// Remove unnecessary steps in our word ladder. If present in both adjacent lists, we can safely remove
-					if ( check.size() > 2 && (adjacent.contains(check.get(check.size()-1)) && adjacent.contains(check.get(check.size()-2)))){
+					if ( check.size() > 2 && (adjacent.contains(check.get(check.size()-1).toUpperCase()) && adjacent.contains(check.get(check.size()-2).toUpperCase()))){
 						check.remove(check.size() -1); 
 					}
-					ladder.add(current); 
+					ladder.add(current.toLowerCase()); 
 					return ladder; 
 				}
 			}
 		}
 		return ladder; 
 	}
-	
 
 	// Returns: ArrayList of Strings which are one character different from argument givenWord
 	private static ArrayList<String> findAdjacentNodes(String givenWord){
@@ -184,11 +245,6 @@ public class Main {
 				}
 			}
 		}
-		// DEBUGGING ONLY +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-//		System.out.println("Attempting: "); 
-//		for (String item : oneOff) {
-//			System.out.println("DEBUGGING findAdjacentNodes: "+ item); // DEBUGGING ONLYw
-//		}
 		return oneOff; 
 	}
 
