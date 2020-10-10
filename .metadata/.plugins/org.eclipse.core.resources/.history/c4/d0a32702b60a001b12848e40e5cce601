@@ -53,7 +53,7 @@ public class Main {
 				
 		// 4. BFS Word Ladder
 		ArrayList<String> ladder2 = new ArrayList<String>(); 
-		ladder2 = getWordLadderBFS(words.get(1), words.get(0)); 		
+		ladder2 = getWordLadderBFS(words.get(0), words.get(1)); 		
 		
 		// 5. Print the best word ladder
 		printLadder(ladder2); 
