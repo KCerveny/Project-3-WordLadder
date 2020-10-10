@@ -56,7 +56,7 @@ public class Main {
 		ladder2 = getWordLadderBFS(words.get(0), words.get(1)); 		
 		
 		// 5. Print the best word ladder
-//		printLadder(ladder2); 
+		printLadder(ladder2); 
 		
 	}
 	
@@ -112,14 +112,13 @@ public class Main {
 			
     public static ArrayList<String> getWordLadderBFS(String start, String end) {
     	ArrayList<String> wordLadder = new ArrayList<String>(); // Ladder to eval and return
-    	ArrayList<String> searchNext = new ArrayList<String>(); // Queue of nodes to search
-    	ArrayList<String> ladder = new ArrayList<String>(); // Argument, to be appended to 
-    	ArrayList<String> discovered = new ArrayList<String>(); 
+    	Node begin = new Node(start, null); // Create starting node in word tree
     	
-    	searchBFS(start, end, ladder, discovered, searchNext);  
-    	wordLadder = discovered; 
+    	wordLadder.add(end.toUpperCase()); 
+    	searchBFS(start, end, begin, wordLadder);  
+    	wordLadder.add(start.toUpperCase()); 
 		
-		return wordLadder; // replace this line later with real return
+		return wordLadder;
 	}
     
 	
@@ -141,54 +140,34 @@ public class Main {
 
 	// PRIVATE HELPER METHODS ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 	
-	private static void searchBFS(String current, String end, ArrayList<String> ladder, ArrayList<String> discovered, ArrayList<String> nodeQueue){
-		ArrayList<String> toAdd;
-		nodeQueue.add(current); 
-		discovered.add(current); 
+	private static void searchBFS(String start, String end, Node tree, ArrayList<String> ladder){		
+		HashSet<String> visited = new HashSet<>(); // Words that have been seen already
+		LinkedList<Node> queue = new LinkedList<>(); // Upcoming word nodes to explore
+		ArrayList<String> upNext; // Holds all adjacent words		
 		
-		while(! nodeQueue.isEmpty()) {
-			String check =  nodeQueue.remove(0); 
-			System.out.println(check); 
-			toAdd = findAdjacentNodes(check); 
+		queue.addFirst(tree);
+		while(! queue.isEmpty()) {
+			Node hold = queue.removeFirst(); // Current node item
+			upNext = findAdjacentNodes(hold.word); // find all adjacent words
 			
-			for (String item : toAdd) {
-				if (!end.equals(item.toLowerCase()) &&  !discovered.contains(item)) {
-					nodeQueue.add(item); 
-					discovered.add(item); 
+			// add all adjacent words to queue
+			for(String item : upNext) {
+				if ( end.equals(item.toLowerCase()) ){
+					while(! hold.word.equals(start)) {
+						ladder.add(hold.word); 
+						hold = hold.prev; // Go up one level
+					}
+					return;
 				}
-			}
+				
+				else if (! visited.contains(item)) {
+					Node touch = new Node(item, hold); // Create a new Node for our word
+					queue.addLast(touch); // Add our new Node to the queue
+					visited.add(item); // Add to discovered words 
+				}
+			}	
 		}
-		
-//		ArrayList<String> toAdd; 
-//		String test; // String which we will be comparing to end and evaluating partners of
-//		
-//		discovered.add(current); // We have visited our current node 
-//		
-//		// Base Case: we have found our end node
-//		if(current.toLowerCase().equals(end)) {
-//			ladder.add(current); // Add the target to the word ladder
-//		}
-//		
-//		// If word is not found, add all UNVISITED nodes at the same level
-//		toAdd = findAdjacentNodes(current); 
-//		for (String item : toAdd) {
-//			if (! discovered.contains(item)) {
-//				nodeQueue.add(item); 
-//			}
-//		}
-//
-//		// Add all next nodes to the queue
-//		while (! nodeQueue.isEmpty()) {
-//			test = nodeQueue.remove(0); // Pop a String off of the Queue
-//			discovered.add(test); 
-//		}
-//		
-//		// Add current node if we have found the end node through this branch
-//		if (! ladder.isEmpty()) {
-//			ladder.add(current); 
-//		}
 	}
-	
 	
 	
 	
