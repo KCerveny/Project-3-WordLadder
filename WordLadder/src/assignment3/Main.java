@@ -68,7 +68,7 @@ public class Main {
 		// only once at the start of main.
 		
 		words = new ArrayList<String>();
-		dictionary = makeDictionary(); 
+		//dictionary = makeDictionary();
 
 	}
 	
@@ -99,9 +99,10 @@ public class Main {
 		ArrayList<String> wordLadder = new ArrayList<String>(); // Where we will store the word ladder
 		ArrayList<String> searched = new ArrayList<String>(); // Already visited
 		ArrayList<String> ladder = new ArrayList<String>(); // Word ladder to find our string
+		Set<String> dictionary = makeDictionary();
 		
 //		findAdjacentNodes(start);
-		wordLadder = searchDFS(end, start, ladder, searched); 
+		wordLadder = searchDFS(end, start, ladder, searched, dictionary);
 		
 		// Case where we could not find a word ladder
 		if (wordLadder.isEmpty()) {
@@ -115,10 +116,11 @@ public class Main {
     public static ArrayList<String> getWordLadderBFS(String start, String end) {
     	ArrayList<String> wordLadder = new ArrayList<String>(); // Ladder to eval and return
     	Node begin = new Node(start, null); // Create starting node in word tree
-    	
+		Set<String> dictionary = makeDictionary();
+
     	wordLadder.add(end.toUpperCase()); 
-    	searchBFS(start, end, begin, wordLadder);  
-    	wordLadder.add(start.toUpperCase()); 
+    	searchBFS(start, end, begin, wordLadder, dictionary);
+    	wordLadder.add(start.toUpperCase());
     	
     	ArrayList<String> finalLadder = new ArrayList<String>(); 
     	for (String word : wordLadder) {
@@ -147,15 +149,15 @@ public class Main {
 
 	// PRIVATE HELPER METHODS ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 	
-	private static void searchBFS(String start, String end, Node tree, ArrayList<String> ladder){		
+	private static void searchBFS(String start, String end, Node tree, ArrayList<String> ladder, Set<String> dictionary){
 		HashSet<String> visited = new HashSet<>(); // Words that have been seen already
 		LinkedList<Node> queue = new LinkedList<>(); // Upcoming word nodes to explore
-		ArrayList<String> upNext; // Holds all adjacent words		
-		
+		ArrayList<String> upNext; // Holds all adjacent words
+
 		queue.addFirst(tree);
 		while(! queue.isEmpty()) {
 			Node hold = queue.removeFirst(); // Current node item
-			upNext = findAdjacentNodes(hold.word); // find all adjacent words
+			upNext = findAdjacentNodes(hold.word, dictionary); // find all adjacent words
 			
 			// add all adjacent words to queue
 			for(String item : upNext) {
@@ -178,7 +180,7 @@ public class Main {
 	
 	
 	
-	private static ArrayList<String> searchDFS(String current, String end, ArrayList<String> ladder, ArrayList<String> Searched){
+	private static ArrayList<String> searchDFS(String current, String end, ArrayList<String> ladder, ArrayList<String> Searched, Set<String> dictionary){
 		ArrayList<String> check; 
 		
 		// End Condition: we have found our word
@@ -189,13 +191,13 @@ public class Main {
 		
 		// If not found, find all adjacent words to current and test
 		Searched.add(current); 
-		ArrayList<String> adjacent = findAdjacentNodes(current); // All words one letter off of current
+		ArrayList<String> adjacent = findAdjacentNodes(current, dictionary); // All words one letter off of current
 		
 		
 		// For each word one letter off, search it's adjacent words
 		for (String next : adjacent) {
 			if (! Searched.contains(next.toUpperCase())) {
-				check = searchDFS(next, end, ladder, Searched); 
+				check = searchDFS(next, end, ladder, Searched, dictionary);
 				if (!check.isEmpty()) {
 					
 					// Remove unnecessary steps in our word ladder. If present in both adjacent lists, we can safely remove
@@ -211,34 +213,34 @@ public class Main {
 	}
 
 	// Returns: ArrayList of Strings which are one character different from argument givenWord
-	private static ArrayList<String> findAdjacentNodes(String givenWord){
-		ArrayList<String> oneOff = new ArrayList<String>(); // Store all words in dictionary one letter off given
-		String testWord; 
-//		char[] CharArray;
-		
-		// Search each word one letter off of givenWord
-		// For each letter in givenWord
-		for (int i = 0; i<givenWord.length(); i++) { 
-			
-			// Replace with each letter, check if new word is in dictionary
-			for (char letter : alphabet) {
-				
-				// Make sure this is not the same word as givenWord
-				if (letter != givenWord.charAt(i) ) {
-					
-//					CharArray = givenWord.toCharArray();
-//					CharArray[i] = letter;
-//					testWord = String.valueOf(CharArray);
-//					testWord = testWord.toUpperCase();
-					testWord = givenWord.replace(givenWord.charAt(i), letter).toUpperCase(); 
-
-					if (dictionary.contains(testWord)) {
-						oneOff.add(testWord); // If valid word, testWord is a new node to explore
+	private static ArrayList<String> findAdjacentNodes(String givenWord, Set<String> dictionary){
+			ArrayList<String> adjacent = new ArrayList<>();
+			String testWord = givenWord.toUpperCase();
+			for(String compare : dictionary){
+				if(!compare.equals(givenWord)){
+					if(differbyOne(testWord, compare)){
+						adjacent.add(compare);
 					}
 				}
 			}
+			return adjacent;
+	}
+
+	//Returns: True if given words only differ by one letter, false otherwise
+	private static boolean differbyOne(String first, String second) {
+		int differsBy = 0;
+
+		for (int i = 0; i < first.length(); i++) {
+			if (first.charAt(i) != second.charAt(i)) {
+				differsBy++;
+				if (differsBy > 1) {
+					return false;
+				}
+			}
 		}
-		return oneOff; 
+
+		return true;
+
 	}
 
 	/* Do not modify makeDictionary */
