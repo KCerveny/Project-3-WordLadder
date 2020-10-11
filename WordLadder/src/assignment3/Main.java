@@ -42,21 +42,24 @@ public class Main {
 		initialize();
 		
 		// 2. Receive and format input from the keyboard
-		words = parse(kb); 
-		if (words.isEmpty()) {
-			return; // given command was "/quit"
-		}
+		//words = parse(kb);
+		//if (words.isEmpty()) {
+			//return; // given command was "/quit"
+		//}
 		
 		// 3. DFS Word Ladder
-		ArrayList<String> ladder1 = new ArrayList<String>();
-		ladder1 = getWordLadderDFS(words.get(0), words.get(1)); 
+		//ArrayList<String> ladder1 = new ArrayList<String>();
+		//ladder1 = getWordLadderDFS(words.get(0), words.get(1));
 				
 		// 4. BFS Word Ladder
 //		ArrayList<String> ladder2 = new ArrayList<String>(); 
-//		ladder2 = getWordLadderBFS(words.get(0), words.get(1)); 		
-		
+//		ladder2 = getWordLadderBFS(words.get(0), words.get(1));
+
+		ArrayList<String> ladder = getWordLadderDFS("sunny", "badge");
+		printLadder(ladder);
+
 		// 5. Print the best word ladder
-		printLadder(ladder1); 
+		//printLadder(ladder1);
 		
 //		ladder1 = findAdjacentNodes("pines"); 
 //		for(String word : ladder1) System.out.println(word);	
@@ -96,21 +99,20 @@ public class Main {
 	}
 	
 	public static ArrayList<String> getWordLadderDFS(String start, String end) {
-		ArrayList<String> wordLadder = new ArrayList<String>(); // Where we will store the word ladder
-		ArrayList<String> searched = new ArrayList<String>(); // Already visited
-		ArrayList<String> ladder = new ArrayList<String>(); // Word ladder to find our string
+		Set<String> searched = new HashSet<String>(); // Already visited
+		ArrayList<String> ladder = new ArrayList<String>(); // The word ladder
 		Set<String> dictionary = makeDictionary();
 		
 //		findAdjacentNodes(start);
-		wordLadder = searchDFS(end, start, ladder, searched, dictionary);
+		searchDFS(start, end, ladder, searched, dictionary);
 		
 		// Case where we could not find a word ladder
-		if (wordLadder.isEmpty()) {
-			wordLadder.add(start); 
-			wordLadder.add(end);
+		if (ladder.isEmpty()) {
+			ladder.add(start);
+			ladder.add(end);
 		}
 		
-		return wordLadder;
+		return ladder;
 	}
 			
     public static ArrayList<String> getWordLadderBFS(String start, String end) {
@@ -180,47 +182,40 @@ public class Main {
 	
 	
 	
-	private static ArrayList<String> searchDFS(String current, String end, ArrayList<String> ladder, ArrayList<String> Searched, Set<String> dictionary){
-		ArrayList<String> check; 
-		
+	private static int searchDFS(String current, String end, ArrayList<String> ladder, Set<String> Searched, Set<String> dictionary){
+
 		// End Condition: we have found our word
 		if(current.toLowerCase().equals(end)) { 
 			ladder.add(current.toLowerCase()); 
-			return ladder; 
+			return 1;
 		}
 		
 		// If not found, find all adjacent words to current and test
-		Searched.add(current); 
-		ArrayList<String> adjacent = findAdjacentNodes(current, dictionary); // All words one letter off of current
+		Searched.add(current);
+		ladder.add(current);
+		//ArrayList<String> adjacent = findAdjacentNodes(current, dictionary); // All words one letter off of current
 		
 		
 		// For each word one letter off, search it's adjacent words
-		for (String next : adjacent) {
-			if (! Searched.contains(next.toUpperCase())) {
-				check = searchDFS(next, end, ladder, Searched, dictionary);
-				if (!check.isEmpty()) {
-					
-					// Remove unnecessary steps in our word ladder. If present in both adjacent lists, we can safely remove
-					if ( check.size() > 2 && (adjacent.contains(check.get(check.size()-1).toUpperCase()) && adjacent.contains(check.get(check.size()-2).toUpperCase()))){
-						check.remove(check.size() -1); 
-					}
-					ladder.add(current.toLowerCase()); 
-					return ladder; 
+		for (String next : dictionary) {
+			if (!Searched.contains(next.toLowerCase()) && !next.equals(current.toUpperCase()) && differbyOne(current, next.toLowerCase())) {
+				int check = searchDFS(next.toLowerCase(), end, ladder, Searched, dictionary);
+				if(check == 1){
+					return 1;
 				}
 			}
 		}
-		return ladder; 
+
+		ladder.remove(current);
+		return 0;
 	}
 
 	// Returns: ArrayList of Strings which are one character different from argument givenWord
 	private static ArrayList<String> findAdjacentNodes(String givenWord, Set<String> dictionary){
 			ArrayList<String> adjacent = new ArrayList<>();
-			String testWord = givenWord.toUpperCase();
 			for(String compare : dictionary){
-				if(!compare.equals(givenWord)){
-					if(differbyOne(testWord, compare)){
-						adjacent.add(compare);
-					}
+				if(!compare.equals(givenWord.toUpperCase()) && differbyOne(givenWord.toUpperCase(), compare)){
+					adjacent.add(compare);
 				}
 			}
 			return adjacent;
