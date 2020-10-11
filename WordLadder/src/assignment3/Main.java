@@ -55,7 +55,7 @@ public class Main {
 //		ArrayList<String> ladder2 = new ArrayList<String>(); 
 //		ladder2 = getWordLadderBFS(words.get(0), words.get(1));
 
-		ArrayList<String> ladder = getWordLadderDFS("sunny", "badge");
+		ArrayList<String> ladder = getWordLadderBFS("sunny", "badge");
 		printLadder(ladder);
 
 		// 5. Print the best word ladder
@@ -126,7 +126,7 @@ public class Main {
     	
     	ArrayList<String> finalLadder = new ArrayList<String>(); 
     	for (String word : wordLadder) {
-    		finalLadder.add(0, word);
+    		finalLadder.add(0, word.toLowerCase());
     	}
     	
 		return finalLadder;
